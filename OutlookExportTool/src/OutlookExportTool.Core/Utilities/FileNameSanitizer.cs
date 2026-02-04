@@ -11,7 +11,7 @@ public static class FileNameSanitizer
             return fallback;
         }
 
-        var invalid = Path.GetInvalidFileNameChars();
+        var invalid = new HashSet<char>(Path.GetInvalidFileNameChars().Concat(new[] { '<', '>', ':', '"', '/', '\\', '|', '?', '*' }));
         var builder = new StringBuilder(name.Length);
         foreach (var ch in name)
         {
