@@ -1,0 +1,36 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.8.34322.80
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OutlookExportTool.Core", "src\\OutlookExportTool.Core\\OutlookExportTool.Core.csproj", "{2C33D2B3-6E6C-45A5-9F6A-76AAB5E4A5A4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OutlookExportTool.Outlook", "src\\OutlookExportTool.Outlook\\OutlookExportTool.Outlook.csproj", "{9F6F8C0F-2A7D-4B9C-B2B8-6D4C74F5D2CE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OutlookExportTool.WPF", "src\\OutlookExportTool.WPF\\OutlookExportTool.WPF.csproj", "{0F1E1D90-6C55-4BA5-9A2D-2BDA0BB0E7A0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OutlookExportTool.Tests", "tests\\OutlookExportTool.Tests\\OutlookExportTool.Tests.csproj", "{B7B61E9B-4F4F-4B6C-A2C9-2AAB9963F5D9}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{2C33D2B3-6E6C-45A5-9F6A-76AAB5E4A5A4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2C33D2B3-6E6C-45A5-9F6A-76AAB5E4A5A4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2C33D2B3-6E6C-45A5-9F6A-76AAB5E4A5A4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2C33D2B3-6E6C-45A5-9F6A-76AAB5E4A5A4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9F6F8C0F-2A7D-4B9C-B2B8-6D4C74F5D2CE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9F6F8C0F-2A7D-4B9C-B2B8-6D4C74F5D2CE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9F6F8C0F-2A7D-4B9C-B2B8-6D4C74F5D2CE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9F6F8C0F-2A7D-4B9C-B2B8-6D4C74F5D2CE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0F1E1D90-6C55-4BA5-9A2D-2BDA0BB0E7A0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0F1E1D90-6C55-4BA5-9A2D-2BDA0BB0E7A0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0F1E1D90-6C55-4BA5-9A2D-2BDA0BB0E7A0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0F1E1D90-6C55-4BA5-9A2D-2BDA0BB0E7A0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B7B61E9B-4F4F-4B6C-A2C9-2AAB9963F5D9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B7B61E9B-4F4F-4B6C-A2C9-2AAB9963F5D9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B7B61E9B-4F4F-4B6C-A2C9-2AAB9963F5D9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B7B61E9B-4F4F-4B6C-A2C9-2AAB9963F5D9}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
