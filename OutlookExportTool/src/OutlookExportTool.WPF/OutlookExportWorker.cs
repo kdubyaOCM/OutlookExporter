@@ -514,6 +514,36 @@ public sealed class OutlookExportWorker
             .FirstOrDefault()?.FullName;
     }
 
+    private static bool ApplyDateRangeFilter(DateTime? itemDate, DateTime? startDateUtc, DateTime? endDateUtc)
+    {
+        if (itemDate == null)
+        {
+            return false;
+        }
+
+        // If both startDate and endDate are null, include all
+        if (startDateUtc == null && endDateUtc == null)
+        {
+            return true;
+        }
+
+        // Apply date range filter
+        if (startDateUtc != null && endDateUtc != null)
+        {
+            return itemDate.Value >= startDateUtc.Value && itemDate.Value <= endDateUtc.Value;
+        }
+        else if (startDateUtc != null)
+        {
+            return itemDate.Value >= startDateUtc.Value;
+        }
+        else if (endDateUtc != null)
+        {
+            return itemDate.Value <= endDateUtc.Value;
+        }
+
+        return true;
+    }
+
     private static bool ShouldIncludeNonMailItem(object item, DateTime? startDateUtc, DateTime? endDateUtc, LogService log)
     {
         // If no date filter is set, include all items
@@ -553,27 +583,7 @@ public sealed class OutlookExportWorker
                 }
             }
 
-            // If we couldn't get a date, exclude the item
-            if (itemDate == null)
-            {
-                return false;
-            }
-
-            // Apply date range filter
-            if (startDateUtc != null && endDateUtc != null)
-            {
-                return itemDate.Value >= startDateUtc.Value && itemDate.Value <= endDateUtc.Value;
-            }
-            else if (startDateUtc != null)
-            {
-                return itemDate.Value >= startDateUtc.Value;
-            }
-            else if (endDateUtc != null)
-            {
-                return itemDate.Value <= endDateUtc.Value;
-            }
-
-            return true;
+            return ApplyDateRangeFilter(itemDate, startDateUtc, endDateUtc);
         }
         catch (System.Exception ex)
         {
@@ -583,7 +593,7 @@ public sealed class OutlookExportWorker
         }
     }
 
-    private static bool ShouldIncludeItem(MailItem mailItem, DateTime? startDate, DateTime? endDate)
+    private static bool ShouldIncludeItem(MailItem mailItem, DateTime? startDateUtc, DateTime? endDateUtc)
     {
         // Get the email date - use SentOn, fallback to ReceivedTime if SentOn is invalid
         var sentOn = ToUtc(mailItem.SentOn);
@@ -596,26 +606,13 @@ public sealed class OutlookExportWorker
             return true;
         }
 
-        // If both startDate and endDate are null, include all emails
-        if (startDate == null && endDate == null)
+        // If both dates are null, include all emails
+        if (startDateUtc == null && endDateUtc == null)
         {
             return true;
         }
 
-        // If only startDate is set, include emails on or after startDate
-        if (startDate != null && endDate == null)
-        {
-            return emailDate >= startDate.Value;
-        }
-
-        // If only endDate is set, include emails on or before endDate
-        if (startDate == null && endDate != null)
-        {
-            return emailDate <= endDate.Value;
-        }
-
-        // If both are set, include emails within the range (inclusive)
-        return emailDate.Value >= startDate.Value && emailDate.Value <= endDate.Value;
+        return ApplyDateRangeFilter(emailDate, startDateUtc, endDateUtc);
     }
 
     private enum ExportStatus
