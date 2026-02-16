@@ -19,6 +19,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
     private string _statusText = "Ready.";
     private double _progressPercent;
     private bool _isRunning;
+    private DateTime? _startDate;
+    private DateTime? _endDate;
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -57,6 +59,18 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
     {
         get => _progressPercent;
         private set => SetField(ref _progressPercent, value);
+    }
+
+    public DateTime? StartDate
+    {
+        get => _startDate;
+        set => SetField(ref _startDate, value);
+    }
+
+    public DateTime? EndDate
+    {
+        get => _endDate;
+        set => SetField(ref _endDate, value);
     }
 
     public bool CanStart => !_isRunning && !string.IsNullOrWhiteSpace(_folderEntryId) && !string.IsNullOrWhiteSpace(OutputFolder);
@@ -131,7 +145,9 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
             OutlookFolderStoreId = _folderStoreId,
             OutlookFolderPath = OutlookFolderPath,
             OutputRoot = OutputFolder,
-            ResumeEnabled = true
+            ResumeEnabled = true,
+            StartDate = StartDate,
+            EndDate = EndDate
         };
 
         var summary = await _orchestrator.StartExportAsync(options, UpdateProgress, _cts.Token);
