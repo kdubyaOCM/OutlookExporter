@@ -35,6 +35,11 @@ public static class FileNameSanitizer
         return candidate;
     }
 
+    /// <summary>
+    /// Asynchronously ensures a unique filename by appending a counter suffix if needed.
+    /// Note: This wraps synchronous File.Exists for use in async contexts, but doesn't provide
+    /// true async I/O benefits as file existence checks are fast metadata operations.
+    /// </summary>
     public static async Task<string> EnsureUniqueAsync(string directory, string baseName, CancellationToken cancellationToken = default)
     {
         var candidate = baseName;

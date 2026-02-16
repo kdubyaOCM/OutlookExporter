@@ -55,6 +55,11 @@ public sealed class StateService
         }
     }
 
+    /// <summary>
+    /// Asynchronously deletes a state file.
+    /// Note: This wraps synchronous File.Delete for use in async contexts, but doesn't provide
+    /// true async I/O benefits as delete operations are fast.
+    /// </summary>
     public Task DeleteAsync(string statePath, CancellationToken cancellationToken = default)
     {
         return Task.Run(() =>

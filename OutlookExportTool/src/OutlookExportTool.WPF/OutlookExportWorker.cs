@@ -536,11 +536,14 @@ public sealed class OutlookExportWorker
             yield break;
         }
 
-        var stateFiles = Directory.GetFiles(outputRoot, "state.json", SearchOption.AllDirectories);
-        foreach (var file in stateFiles.OrderByDescending(f => new FileInfo(f).LastWriteTimeUtc))
+        var stateFiles = Directory.GetFiles(outputRoot, "state.json", SearchOption.AllDirectories)
+            .Select(path => new FileInfo(path))
+            .OrderByDescending(info => info.LastWriteTimeUtc);
+
+        foreach (var fileInfo in stateFiles)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            yield return new FileInfo(file);
+            yield return fileInfo;
         }
     }
 
