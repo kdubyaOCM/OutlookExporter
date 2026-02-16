@@ -4,6 +4,8 @@ namespace OutlookExportTool.Core.Utilities;
 
 public static class FileNameSanitizer
 {
+    private static readonly HashSet<char> InvalidChars = new(Path.GetInvalidFileNameChars().Concat(new[] { '<', '>', ':', '"', '/', '\\', '|', '?', '*' }));
+
     public static string Sanitize(string? name, string fallback = "file")
     {
         if (string.IsNullOrWhiteSpace(name))
@@ -11,11 +13,10 @@ public static class FileNameSanitizer
             return fallback;
         }
 
-        var invalid = new HashSet<char>(Path.GetInvalidFileNameChars().Concat(new[] { '<', '>', ':', '"', '/', '\\', '|', '?', '*' }));
         var builder = new StringBuilder(name.Length);
         foreach (var ch in name)
         {
-            builder.Append(invalid.Contains(ch) ? '_' : ch);
+            builder.Append(InvalidChars.Contains(ch) ? '_' : ch);
         }
 
         var cleaned = builder.ToString().Trim();
@@ -27,6 +28,23 @@ public static class FileNameSanitizer
         var candidate = baseName;
         var counter = 1;
         while (File.Exists(Path.Combine(directory, candidate)))
+        {
+            candidate = AppendSuffix(baseName, counter++);
+        }
+
+        return candidate;
+    }
+
+    /// <summary>
+    /// Asynchronously ensures a unique filename by appending a counter suffix if needed.
+    /// Note: This wraps synchronous File.Exists for use in async contexts, but doesn't provide
+    /// true async I/O benefits as file existence checks are fast metadata operations.
+    /// </summary>
+    public static async Task<string> EnsureUniqueAsync(string directory, string baseName, CancellationToken cancellationToken = default)
+    {
+        var candidate = baseName;
+        var counter = 1;
+        while (await Task.Run(() => File.Exists(Path.Combine(directory, candidate)), cancellationToken))
         {
             candidate = AppendSuffix(baseName, counter++);
         }

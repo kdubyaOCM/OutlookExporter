@@ -18,6 +18,7 @@ public sealed class ExportOrchestrator
             }
             catch (Exception ex)
             {
+                Console.WriteLine($"Export worker failed: {ex.GetType().Name} - {ex.Message}. Stack trace: {ex.StackTrace}");
                 var summary = new ExportSummary
                 {
                     Canceled = token.IsCancellationRequested,
