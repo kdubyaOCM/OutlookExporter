@@ -88,4 +88,35 @@ public sealed class ManifestService
         Directory.CreateDirectory(Path.GetDirectoryName(manifestPath)!);
         await File.AppendAllTextAsync(manifestPath, json + Environment.NewLine, cancellationToken);
     }
+
+    public async IAsyncEnumerable<ManifestEntry> ReadEntriesAsync(string manifestPath, [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        if (!File.Exists(manifestPath))
+        {
+            yield break;
+        }
+
+        await foreach (var line in File.ReadLinesAsync(manifestPath, cancellationToken))
+        {
+            if (string.IsNullOrWhiteSpace(line))
+            {
+                continue;
+            }
+
+            ManifestEntry? entry = null;
+            try
+            {
+                entry = JsonSerializer.Deserialize<ManifestEntry>(line, JsonOptions);
+            }
+            catch
+            {
+                // Ignore malformed lines for resilience.
+            }
+
+            if (entry != null && !string.IsNullOrWhiteSpace(entry.EntryId))
+            {
+                yield return entry;
+            }
+        }
+    }
 }

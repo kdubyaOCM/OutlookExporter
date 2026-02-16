@@ -395,7 +395,7 @@ public sealed class OutlookExportWorker
         return recipients;
     }
 
-    private static string? TryGetBodyPreview(MailItem mailItem, LogService log, out string? error)
+    private static string? TryGetBodyPreview(MailItem mailItem, LogService log, [System.Diagnostics.CodeAnalysis.NotNullWhen(false)] out string? error)
     {
         error = null;
         try
@@ -405,7 +405,7 @@ public sealed class OutlookExportWorker
         }
         catch (Exception ex)
         {
-            error = $"Body inaccessible: {ex.Message}";
+            error = $"Body inaccessible: {ex.GetType().Name} - {ex.Message}";
             log.Warn(error);
             return null;
         }
@@ -525,6 +525,23 @@ public sealed class OutlookExportWorker
                 .OrderByDescending(info => info.LastWriteTimeUtc)
                 .FirstOrDefault()?.FullName;
         }, cancellationToken);
+    }
+
+    private static async IAsyncEnumerable<FileInfo> EnumerateStateFilesAsync(string outputRoot, [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        await Task.Yield();
+
+        if (!Directory.Exists(outputRoot))
+        {
+            yield break;
+        }
+
+        var stateFiles = Directory.GetFiles(outputRoot, "state.json", SearchOption.AllDirectories);
+        foreach (var file in stateFiles.OrderByDescending(f => new FileInfo(f).LastWriteTimeUtc))
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            yield return new FileInfo(file);
+        }
     }
 
     private enum ExportStatus
