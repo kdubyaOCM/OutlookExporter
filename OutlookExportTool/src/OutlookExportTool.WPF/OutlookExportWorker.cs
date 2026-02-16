@@ -505,6 +505,28 @@ public sealed class OutlookExportWorker
             .FirstOrDefault()?.FullName;
     }
 
+    private static async Task<string?> FindLatestStatePathAsync(string outputRoot, CancellationToken cancellationToken = default)
+    {
+        return await Task.Run(() =>
+        {
+            if (!Directory.Exists(outputRoot))
+            {
+                return null;
+            }
+
+            var stateFiles = Directory.GetFiles(outputRoot, "state.json", SearchOption.AllDirectories);
+            if (stateFiles.Length == 0)
+            {
+                return null;
+            }
+
+            return stateFiles
+                .Select(path => new FileInfo(path))
+                .OrderByDescending(info => info.LastWriteTimeUtc)
+                .FirstOrDefault()?.FullName;
+        }, cancellationToken);
+    }
+
     private enum ExportStatus
     {
         Complete,

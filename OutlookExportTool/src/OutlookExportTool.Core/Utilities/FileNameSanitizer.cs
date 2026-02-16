@@ -35,6 +35,18 @@ public static class FileNameSanitizer
         return candidate;
     }
 
+    public static async Task<string> EnsureUniqueAsync(string directory, string baseName, CancellationToken cancellationToken = default)
+    {
+        var candidate = baseName;
+        var counter = 1;
+        while (await Task.Run(() => File.Exists(Path.Combine(directory, candidate)), cancellationToken))
+        {
+            candidate = AppendSuffix(baseName, counter++);
+        }
+
+        return candidate;
+    }
+
     private static string AppendSuffix(string name, int counter)
     {
         var ext = Path.GetExtension(name);
