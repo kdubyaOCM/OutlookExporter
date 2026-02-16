@@ -21,18 +21,25 @@ public sealed class IdService
     {
         var body = bodyPreview ?? string.Empty;
         var time = sentOrReceivedUtc?.ToString("o") ?? string.Empty;
+        var sanitizedSender = sender ?? string.Empty;
+        var sanitizedSubject = subject ?? string.Empty;
 
         if (!string.IsNullOrWhiteSpace(messageId))
         {
-            return string.Join("|", messageId.Trim(), sender ?? string.Empty, subject ?? string.Empty, time, body);
+            return JoinFields(messageId.Trim(), sanitizedSender, sanitizedSubject, time, body);
         }
 
         if (searchKeyFallback is { Length: > 0 })
         {
             var fallbackHex = Convert.ToHexString(searchKeyFallback);
-            return string.Join("|", fallbackHex, sender ?? string.Empty, subject ?? string.Empty, time, body);
+            return JoinFields(fallbackHex, sanitizedSender, sanitizedSubject, time, body);
         }
 
-        return string.Join("|", entryIdFallback ?? string.Empty, sender ?? string.Empty, subject ?? string.Empty, time, body);
+        return JoinFields(entryIdFallback ?? string.Empty, sanitizedSender, sanitizedSubject, time, body);
+    }
+
+    private static string JoinFields(params string[] fields)
+    {
+        return string.Join("|", fields);
     }
 }

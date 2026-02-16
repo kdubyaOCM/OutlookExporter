@@ -4,6 +4,8 @@ namespace OutlookExportTool.Core.Utilities;
 
 public static class FileNameSanitizer
 {
+    private static readonly HashSet<char> InvalidChars = new(Path.GetInvalidFileNameChars().Concat(new[] { '<', '>', ':', '"', '/', '\\', '|', '?', '*' }));
+
     public static string Sanitize(string? name, string fallback = "file")
     {
         if (string.IsNullOrWhiteSpace(name))
@@ -11,11 +13,10 @@ public static class FileNameSanitizer
             return fallback;
         }
 
-        var invalid = new HashSet<char>(Path.GetInvalidFileNameChars().Concat(new[] { '<', '>', ':', '"', '/', '\\', '|', '?', '*' }));
         var builder = new StringBuilder(name.Length);
         foreach (var ch in name)
         {
-            builder.Append(invalid.Contains(ch) ? '_' : ch);
+            builder.Append(InvalidChars.Contains(ch) ? '_' : ch);
         }
 
         var cleaned = builder.ToString().Trim();
