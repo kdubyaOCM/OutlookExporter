@@ -508,11 +508,15 @@ public sealed class OutlookExportWorker
 
     private static bool ShouldIncludeItem(MailItem mailItem, DateTime? startDate, DateTime? endDate)
     {
-        // Get the email date - use SentOn, fallback to ReceivedTime if SentOn is DateTime.MinValue
-        var emailDate = mailItem.SentOn;
-        if (emailDate == DateTime.MinValue)
+        // Get the email date - use SentOn, fallback to ReceivedTime if SentOn is invalid
+        var sentOn = ToUtc(mailItem.SentOn);
+        var receivedTime = ToUtc(mailItem.ReceivedTime);
+        var emailDate = sentOn ?? receivedTime;
+
+        // If we couldn't get a valid date, include the item by default
+        if (emailDate == null)
         {
-            emailDate = mailItem.ReceivedTime;
+            return true;
         }
 
         // If both startDate and endDate are null, include all emails
