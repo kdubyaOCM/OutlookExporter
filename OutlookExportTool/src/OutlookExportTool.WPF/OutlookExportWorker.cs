@@ -534,7 +534,8 @@ public sealed class OutlookExportWorker
         }
 
         // If both are set, include emails within the range (inclusive)
-        return emailDate >= startDate.Value && emailDate <= endDate.Value;
+        // At this point, both startDate and endDate are guaranteed to be non-null
+        return emailDate >= startDate!.Value && emailDate <= endDate!.Value;
     }
 
     private enum ExportStatus
