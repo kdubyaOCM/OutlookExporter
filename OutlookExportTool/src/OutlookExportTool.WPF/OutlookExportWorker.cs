@@ -133,7 +133,11 @@ public sealed class OutlookExportWorker
                 {
                     if (item is MailItem mailItem)
                     {
-                        pending.Add(mailItem.EntryID);
+                        // Check date filtering
+                        if (ShouldIncludeItem(mailItem, options.StartDate, options.EndDate))
+                        {
+                            pending.Add(mailItem.EntryID);
+                        }
                     }
                     else
                     {
@@ -500,6 +504,37 @@ public sealed class OutlookExportWorker
             .Select(path => new FileInfo(path))
             .OrderByDescending(info => info.LastWriteTimeUtc)
             .FirstOrDefault()?.FullName;
+    }
+
+    private static bool ShouldIncludeItem(MailItem mailItem, DateTime? startDate, DateTime? endDate)
+    {
+        // Get the email date - use SentOn, fallback to ReceivedTime if SentOn is DateTime.MinValue
+        var emailDate = mailItem.SentOn;
+        if (emailDate == DateTime.MinValue)
+        {
+            emailDate = mailItem.ReceivedTime;
+        }
+
+        // If both startDate and endDate are null, include all emails
+        if (startDate == null && endDate == null)
+        {
+            return true;
+        }
+
+        // If only startDate is set, include emails on or after startDate
+        if (startDate != null && endDate == null)
+        {
+            return emailDate >= startDate.Value;
+        }
+
+        // If only endDate is set, include emails on or before endDate
+        if (startDate == null && endDate != null)
+        {
+            return emailDate <= endDate.Value;
+        }
+
+        // If both are set, include emails within the range (inclusive)
+        return emailDate >= startDate.Value && emailDate <= endDate.Value;
     }
 
     private enum ExportStatus
