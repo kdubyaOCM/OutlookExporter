@@ -104,7 +104,7 @@ public sealed class OutlookExportWorker
             catch (System.Exception ex)
             {
                 summary.Failed++;
-                log.Error($"Failed processing entry {entryId}: {ex.Message}");
+                log.Error($"Failed processing entry {entryId}: {ex.GetType().Name} - {ex.Message}. Stack trace: {ex.StackTrace}");
             }
         }
 
@@ -142,7 +142,7 @@ public sealed class OutlookExportWorker
                 }
                 catch (Exception ex)
                 {
-                    log.Warn($"Failed to read item entry id: {ex.Message}");
+                    log.Warn($"Failed to read item entry id: {ex.GetType().Name} - {ex.Message}");
                 }
                 finally
                 {
@@ -247,7 +247,7 @@ public sealed class OutlookExportWorker
             status = ExportStatus.Failed;
             manifestEntry.ExportStatus = "failed";
             manifestEntry.Error = ex.Message;
-            log.Error($"Export failed for {entryId}: {ex.Message}");
+            log.Error($"Export failed for {entryId}: {ex.GetType().Name} - {ex.Message}. Stack trace: {ex.StackTrace}");
         }
 
         if (bodyError != null && status != ExportStatus.Failed)
@@ -299,7 +299,7 @@ public sealed class OutlookExportWorker
                 }
                 catch (Exception ex)
                 {
-                    log.Warn($"Failed to extract attachment {i}: {ex.Message}");
+                    log.Warn($"Failed to extract attachment {i} for entry {entryId}: {ex.GetType().Name} - {ex.Message}");
                 }
                 finally
                 {
@@ -431,8 +431,9 @@ public sealed class OutlookExportWorker
 
     private static string ResolveCollision(string baseEntryId, string emailsRoot, LogService log, ExportSummary summary)
     {
+        const int maxRetries = 1000;
         var counter = 1;
-        while (true)
+        while (counter <= maxRetries)
         {
             var candidate = $"{baseEntryId}-collision-{counter}";
             var candidateFolder = Path.Combine(emailsRoot, candidate);
@@ -445,6 +446,8 @@ public sealed class OutlookExportWorker
 
             counter++;
         }
+
+        throw new InvalidOperationException($"Unable to resolve collision for {baseEntryId} after {maxRetries} attempts");
     }
 
     private string ResolveExportRoot(ExportOptions options, out ExportState? resumeState)
