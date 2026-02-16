@@ -120,6 +120,10 @@ public sealed class OutlookExportWorker
         MAPIFolder? folder = null;
         Items? items = null;
 
+        // Convert StartDate and EndDate to UTC for comparison
+        var startDateUtc = options.StartDate?.ToUniversalTime();
+        var endDateUtc = options.EndDate?.ToUniversalTime();
+
         try
         {
             folder = session.GetFolder(options.OutlookFolderEntryId, options.OutlookFolderStoreId);
@@ -134,14 +138,18 @@ public sealed class OutlookExportWorker
                     if (item is MailItem mailItem)
                     {
                         // Check date filtering
-                        if (ShouldIncludeItem(mailItem, options.StartDate, options.EndDate))
+                        if (ShouldIncludeItem(mailItem, startDateUtc, endDateUtc))
                         {
                             pending.Add(mailItem.EntryID);
                         }
                     }
                     else
                     {
-                        pending.Add(((dynamic)item).EntryID);
+                        // Apply date filtering to non-MailItems as well
+                        if (ShouldIncludeNonMailItem(item, startDateUtc, endDateUtc, log))
+                        {
+                            pending.Add(((dynamic)item).EntryID);
+                        }
                     }
                 }
                 catch (Exception ex)
@@ -504,6 +512,75 @@ public sealed class OutlookExportWorker
             .Select(path => new FileInfo(path))
             .OrderByDescending(info => info.LastWriteTimeUtc)
             .FirstOrDefault()?.FullName;
+    }
+
+    private static bool ShouldIncludeNonMailItem(object item, DateTime? startDateUtc, DateTime? endDateUtc, LogService log)
+    {
+        // If no date filter is set, include all items
+        if (startDateUtc == null && endDateUtc == null)
+        {
+            return true;
+        }
+
+        try
+        {
+            dynamic dynamicItem = item;
+            
+            // Try to get date properties from the item
+            DateTime? itemDate = null;
+            
+            // Try to access common date properties that might exist on various Outlook items
+            try
+            {
+                var sentOn = dynamicItem.SentOn;
+                itemDate = ToUtc(sentOn);
+            }
+            catch
+            {
+                // SentOn not available, try ReceivedTime
+            }
+
+            if (itemDate == null)
+            {
+                try
+                {
+                    var receivedTime = dynamicItem.ReceivedTime;
+                    itemDate = ToUtc(receivedTime);
+                }
+                catch
+                {
+                    // ReceivedTime not available
+                }
+            }
+
+            // If we couldn't get a date, exclude the item
+            if (itemDate == null)
+            {
+                return false;
+            }
+
+            // Apply date range filter
+            if (startDateUtc != null && endDateUtc != null)
+            {
+                return itemDate.Value >= startDateUtc.Value && itemDate.Value <= endDateUtc.Value;
+            }
+            else if (startDateUtc != null)
+            {
+                return itemDate.Value >= startDateUtc.Value;
+            }
+            else if (endDateUtc != null)
+            {
+                return itemDate.Value <= endDateUtc.Value;
+            }
+
+            return true;
+        }
+        catch (System.Exception ex)
+        {
+            log.Warn($"Failed to get date from non-mail item: {ex.Message}");
+            // Exclude items we can't get dates from when date filtering is active
+            return false;
+        }
     }
 
     private static bool ShouldIncludeItem(MailItem mailItem, DateTime? startDate, DateTime? endDate)

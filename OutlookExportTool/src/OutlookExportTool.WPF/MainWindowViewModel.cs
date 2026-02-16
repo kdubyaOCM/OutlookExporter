@@ -64,16 +64,31 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
     public DateTime? StartDate
     {
         get => _startDate;
-        set => SetField(ref _startDate, value);
+        set
+        {
+            if (SetField(ref _startDate, value))
+            {
+                RaiseCommandState();
+            }
+        }
     }
 
     public DateTime? EndDate
     {
         get => _endDate;
-        set => SetField(ref _endDate, value);
+        set
+        {
+            if (SetField(ref _endDate, value))
+            {
+                RaiseCommandState();
+            }
+        }
     }
 
-    public bool CanStart => !_isRunning && !string.IsNullOrWhiteSpace(_folderEntryId) && !string.IsNullOrWhiteSpace(OutputFolder);
+    public bool CanStart => !_isRunning 
+        && !string.IsNullOrWhiteSpace(_folderEntryId) 
+        && !string.IsNullOrWhiteSpace(OutputFolder)
+        && (_startDate == null || _endDate == null || _startDate <= _endDate);
     public bool CanCancel => _isRunning;
 
     private void PickOutlookFolder()
@@ -186,14 +201,15 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         CancelCommand.RaiseCanExecuteChanged();
     }
 
-    private void SetField<T>(ref T field, T value, [CallerMemberName] string? name = null)
+    private bool SetField<T>(ref T field, T value, [CallerMemberName] string? name = null)
     {
         if (EqualityComparer<T>.Default.Equals(field, value))
         {
-            return;
+            return false;
         }
 
         field = value;
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+        return true;
     }
 }
